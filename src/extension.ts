@@ -60,6 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	vscode.workspace.onDidCloseTextDocument(doc => {
 		console.log('closed', {fileName: doc.fileName})
+		delete openAutomergeDocuments[doc.fileName]
 	})
 
 	vscode.workspace.onDidSaveTextDocument(doc => {
