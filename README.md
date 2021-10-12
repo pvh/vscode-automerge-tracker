@@ -20,7 +20,9 @@ The vscode-automerge-tracker doesn't handle merges. Rather, a user should use th
 
 ## Known Issues
 
-Be careful not to save edits to the text document with other editors. We have not yet implemented synchronization and so if this happens strange things will begin to occur and there's no way to reconcile the two versions yet.
+There is some attempt to synchronize the text buffer to the contents of the .mrg but it is fragile and probably wrong! When you open a document, the extension will report if it thinks the .mrg is in sync or not with the text buffer, and if not, it will wrench it into place.
+
+Be careful not to save edits to the text document with other editors. It might break things!
 
 Do not merge changes from another user when you have unsaved work. This will probably also break things.
 

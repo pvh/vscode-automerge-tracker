@@ -10,11 +10,7 @@ interface AutoText {
 
 const openAutomergeDocuments: { [id: string]: AutoText } = {}
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	console.log('okay')
-
 	function load(fileName: string) {
 		return fs.readFile(fileName + ".mrg").then(binary => {
 			if (!binary.length) { return }
@@ -24,7 +20,6 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 	function save(fileName: string, doc: AutoText) {
 		const binary = Automerge.save(doc)
-		console.log("saving: ", doc.text.join(''))
 		fs.writeFile(fileName + ".mrg", binary)
 		return doc
 	}
@@ -50,37 +45,49 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	vscode.workspace.onDidOpenTextDocument(doc => {
-		console.log('open', {fileName: doc.fileName})
 		load(doc.fileName).then(d => {
 			if (!d) { return }
-			openAutomergeDocuments[doc.fileName] = d
-			console.log("loaded: ", d.text.join(''))
+			const mrgText = d.text.join('')
+			const bufferText = doc.getText()
+
+			if (mrgText !== bufferText) {
+				console.log('mrgtext: ', mrgText)
+				console.log('bufferText: ', bufferText)
+				
+				const editor = vscode.window.visibleTextEditors.find(e => e.document === doc)
+				if (!editor) {
+					vscode.window.showErrorMessage("Found a mismatched .mrg / source document and couldn't correct it. Don't save anything and report this bug!")
+				} else {
+					editor.edit(editBuilder => {
+						editBuilder.replace(new vscode.Range(doc.positionAt(0), doc.positionAt(bufferText.length)), mrgText)
+					})
+					vscode.window.showErrorMessage("Replaced buffer contents with document found .mrg to prevent desynchronization.")
+				}				
+			}
+			else {
+				vscode.window.showInformationMessage("Loaded companion .mrg file (and it matches this buffer.)")
+			}
+			
+			// wait until the onDidTextChange
+			setTimeout( () => { openAutomergeDocuments[doc.fileName] = d }, 0)
 		})
 	})
 	
 	vscode.workspace.onDidCloseTextDocument(doc => {
-		console.log('closed', {fileName: doc.fileName})
 		delete openAutomergeDocuments[doc.fileName]
 	})
 
 	vscode.workspace.onDidSaveTextDocument(doc => {
-		console.log('save', {fileName: doc.fileName})
-
 		const fileName = doc.fileName
 		const d = openAutomergeDocuments[fileName]
-
-		if (!d) { console.log(`Document ${fileName} has no open automerge document.`)}
-
-		save(fileName, d)
+		if (d) { save(fileName, d) }
 	})
 
 	vscode.workspace.onDidChangeTextDocument(e => {
-		console.log('change event', e)
-
 		const fileName = e.document.fileName
 		const d = openAutomergeDocuments[fileName]
 
-		if (!d) { console.log(`Document ${fileName} has no open automerge document.`)}
+		if (!d) { return }
 
 		const d2 = change(d,e)
 		if (!d2) { console.log(`Change returned no document!`); return }
