@@ -1,70 +1,35 @@
 # vscode-automerge-tracker README
 
-This is the README for your extension "vscode-automerge-tracker". After writing up a brief description, we recommend including the following sections.
+The VSCode automerge tracker extension can record all edits made in VSCode to a document in a companion .mrg document.
 
-## Features
+The .mrg document is a simple Automerge document with this schema:
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+```{ text: Automerge.Text }``` 
 
-For example if there is an image subfolder under your extension project workspace:
+If a document is opened that has a .mrg file, it will be used automatically, but new .mrg files will only be created if a user runs the `automerge-sync.begin` (show as "Begin sync to an Automerge document") in the Ctrl-Shift-P command menu.
 
-\!\[feature X\]\(images/feature-x.png\)
+## Operation
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Every edit to the buffer in question is recorded to a local automerge document in memory. Both documents are saved at the same time.
 
-## Requirements
+Turning on sync for a document will also do a one-time import, inserting all the existing characters as a single change. 
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Merging with other users
 
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+The vscode-automerge-tracker doesn't handle merges. Rather, a user should use the [automerge-git-merge-driver](https://github.com/pvh/automerge-git-merge-driver).  
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Be careful not to save edits to the text document with other editors. We have not yet implemented synchronization and so if this happens strange things will begin to occur and there's no way to reconcile the two versions yet.
+
+Do not merge changes from another user when you have unsaved work. This will probably also break things.
 
 ## Release Notes
 
 Users appreciate release notes as you update your extension.
 
-### 1.0.0
+### 0.1
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Initial release. Undoubtedly fragile and broken.
 
 -----------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
