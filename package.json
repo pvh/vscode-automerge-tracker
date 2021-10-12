@@ -2,6 +2,8 @@
 	"name": "vscode-automerge-tracker",
 	"displayName": "vscode-automerge-tracker",
 	"description": "An extremely fragile bridge between a VSCode text buffer and automerge.",
+	"publisher": "inkandswitch",
+	"repository": { "url": "https://github.com/pvh/vscode-automerge-tracker" },
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.60.0"
