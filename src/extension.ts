@@ -34,6 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if (!d) { return }
 		const doc = Automerge.change(d, (doc: AutoText) => {
 			e.contentChanges.forEach(c => {
+				console.log('applying change:', c)
 				const t = doc.text
 				if (t) {
 					if (c.rangeLength) { t.deleteAt!(c.rangeOffset, c.rangeLength) }
@@ -44,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
 		return doc
 	}
 
-	vscode.workspace.onDidOpenTextDocument(doc => {
+	function open(doc: vscode.TextDocument) {
 		load(doc.fileName).then(d => {
 			if (!d) { return }
 			const mrgText = d.text.join('')
@@ -59,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 					vscode.window.showErrorMessage("Found a mismatched .mrg / source document and couldn't correct it. Don't save anything and report this bug!")
 				} else {
 					editor.edit(editBuilder => {
-						editBuilder.replace(new vscode.Range(doc.positionAt(0), doc.positionAt(bufferText.length)), mrgText)
+						editBuilder.replace(new vscode.Range(doc.positionAt(0), doc.positionAt(bufferText.length+1)), mrgText)
 					})
 					vscode.window.showErrorMessage("Replaced buffer contents with document found .mrg to prevent desynchronization.")
 				}				
@@ -69,10 +70,11 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			
 			// wait until the onDidTextChange
-			setTimeout( () => { openAutomergeDocuments[doc.fileName] = d }, 0)
+			setTimeout( () => { openAutomergeDocuments[doc.fileName] = d }, 100)
 		})
-	})
+	}
 	
+	vscode.workspace.onDidOpenTextDocument(doc => open(doc))
 	vscode.workspace.onDidCloseTextDocument(doc => {
 		delete openAutomergeDocuments[doc.fileName]
 	})
@@ -94,6 +96,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 		openAutomergeDocuments[fileName] = d2
 	})
+
+	vscode.workspace.textDocuments.forEach(doc => {open(doc)})
 
 	let disposable = vscode.commands.registerCommand('automerge-sync.begin', () => {
 		const editor = vscode.window.activeTextEditor
